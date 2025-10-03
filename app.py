@@ -81,13 +81,10 @@ def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-
     if not username or not password:
         return jsonify({'error': 'Missing username or password'}), 400
-
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Username already exists'}), 409
-
     new_user = User(username=username)
     new_user.set_password(password)
     db.session.add(new_user)
@@ -117,9 +114,81 @@ def auth_status():
         return jsonify({'is_logged_in': True, 'username': current_user.username})
     return jsonify({'is_logged_in': False})
 
-# --- Main Application and API Routes ---
-# (Remember to add your main '/' route and your CRUD API routes for expenses here)
-# ...
+# --- Main Application Route ---
+@app.route('/')
+@login_required
+def index():
+    return render_template('index.html')
+
+# --- API Routes for Expenses (CRUD) ---
+@app.route('/api/expenses', methods=['POST'])
+@login_required
+def create_expense():
+    data = request.get_json()
+    try:
+        new_expense = Expense(
+            description=data['description'],
+            category=ExpenseCategory[data['category'].upper()],
+            base_amount=float(data['base_amount']),
+            tax_rate=float(data['tax_rate']),
+            is_recurring=bool(data['is_recurring']),
+            user_id=current_user.id
+        )
+        db.session.add(new_expense)
+        db.session.commit()
+        return jsonify(new_expense.to_dict()), 201
+    except (KeyError, ValueError) as e:
+        return jsonify({'error': f'Invalid input data: {e}'}), 400
+
+@app.route('/api/expenses', methods=['GET'])
+@login_required
+def get_expenses():
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    category_filter = request.args.get('category', None, type=str)
+    query = Expense.query.filter_by(user_id=current_user.id)
+    if category_filter:
+        try:
+            category_enum = ExpenseCategory[category_filter.upper()]
+            query = query.filter_by(category=category_enum)
+        except KeyError:
+            return jsonify({'error': 'Invalid category filter'}), 400
+    paginated_expenses = query.order_by(Expense.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return jsonify({
+        'expenses': [expense.to_dict() for expense in paginated_expenses.items],
+        'total_pages': paginated_expenses.pages,
+        'current_page': paginated_expenses.page,
+        'has_next': paginated_expenses.has_next,
+        'has_prev': paginated_expenses.has_prev
+    })
+
+@app.route('/api/expenses/<int:expense_id>', methods=['PUT'])
+@login_required
+def update_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    if expense.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    data = request.get_json()
+    try:
+        expense.description = data.get('description', expense.description)
+        expense.category = ExpenseCategory[data['category'].upper()]
+        expense.base_amount = float(data.get('base_amount', expense.base_amount))
+        expense.tax_rate = float(data.get('tax_rate', expense.tax_rate))
+        expense.is_recurring = bool(data.get('is_recurring', expense.is_recurring))
+        db.session.commit()
+        return jsonify(expense.to_dict())
+    except (KeyError, ValueError) as e:
+        return jsonify({'error': f'Invalid input data: {e}'}), 400
+
+@app.route('/api/expenses/<int:expense_id>', methods=['DELETE'])
+@login_required
+def delete_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    if expense.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    db.session.delete(expense)
+    db.session.commit()
+    return jsonify({'message': 'Expense deleted successfully'})
 
 # This block should always be at the very end of the file
 if __name__ == '__main__':

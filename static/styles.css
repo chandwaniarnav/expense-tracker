@@ -1,18 +1,306 @@
-body { font-family: sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
-.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
-h1, h2 { color: #333; }
-.form-container { display: flex; gap: 20px; margin-bottom: 20px; }
-form { flex: 1; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-input, select, button { width: 100%; padding: 10px; margin: 5px 0 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
-button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-button:hover { background-color: #0056b3; }
-#cancel-edit { background-color: #6c757d; }
+/* --- General Body & Font Styling --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --secondary-color: #6b7280;
+    --danger-color: #ef4444;
+    --danger-hover: #dc2626;
+    --light-gray: #f9fafb;
+    --border-color: #e5e7eb;
+    --text-dark: #111827;
+    --text-light: #6b7280;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-gray);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 2rem;
+}
+
+/* --- Main Container & Card Layout --- */
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Header --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+header a {
+    text-decoration: none;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+header a:hover {
+    background-color: var(--text-dark);
+}
+
+/* --- Form Styling --- */
+.form-container {
+    background-color: #fff;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+#form-title {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+
+/* --- Checkbox Alignment Fix --- */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+    accent-color: var(--primary-color);
+    height: 1.25em;
+    width: 1.25em;
+}
+
+.checkbox-container label {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* --- Button Styling --- */
+button {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button[type="submit"] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--primary-hover);
+}
+
+#cancel-edit {
+    background-color: var(--secondary-color);
+    color: white;
+    margin-top: 0.5rem;
+}
+#cancel-edit:hover {
+    background-color: var(--text-dark);
+}
+
+/* --- Filter, Table & Pagination --- */
+.filter-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.filter-container label {
+    font-weight: 500;
+}
+.filter-container select {
+    width: 200px;
+    margin-bottom: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+th, td {
+    border: 1px solid var(--border-color);
+    padding: 0.9rem;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background-color: var(--light-gray);
+    font-weight: 600;
+}
+
+tr:nth-child(even) {
+    background-color: var(--light-gray);
+}
+
+.action-buttons button {
+    width: auto;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+}
+
+.action-buttons .edit-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+.action-buttons .edit-btn:hover {
+    background-color: var(--primary-hover);
+}
+.action-buttons .delete-btn {
+    background-color: var(--danger-color);
+    color: white;
+}
+.action-buttons .delete-btn:hover {
+    background-color: var(--danger-hover);
+}
+
+.pagination {
+    text-align: center;
+}
+
+.pagination button {
+    width: auto;
+    padding: 0.6rem 1.2rem;
+    margin: 0 0.5rem;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.pagination button:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* --- Utility Classes --- */
 .hidden { display: none; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-th { background-color: #f2f2f2; }
-.pagination { text-align: center; }
-.pagination button { width: auto; padding: 8px 16px; margin: 0 5px; }
-.pagination button:disabled { background-color: #ccc; cursor: not-allowed; }
-.filter-container { margin-bottom: 20px; }
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    body { padding: 1rem; }
+    .container { padding: 1.5rem; }
+    header { flex-direction: column; gap: 1rem; }
+}
+
+/* --- NEW STYLES FOR LOGIN PAGE --- */
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.form-card {
+    width: 100%;
+    max-width: 450px;
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.card-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.card-header p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.tab-buttons {
+    display: flex;
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    padding: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: transparent;
+    color: var(--text-light);
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.tab-button.active {
+    background-color: #ffffff;
+    color: var(--primary-color);
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+}
+
+.form-content {
+    display: none;
+}
+
+.form-content.active {
+    display: block;
+}
+
+#message {
+    margin-top: 1.5rem;
+    font-weight: 500;
+    min-height: 24px; /* Prevents layout shift */
+}
+

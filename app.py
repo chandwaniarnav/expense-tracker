@@ -4,15 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum as PyEnum
-from dotenv import load_dotenv # <-- Import the library
+from dotenv import load_dotenv
 
-load_dotenv() # <-- Load the .env file
+load_dotenv()
 
 # --- App Initialization ---
 app = Flask(__name__)
-
-# This is now production-ready. It reads the SECRET_KEY from the environment.
-# If the key is not found, the app will fail to start, which is a good security practice.
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,7 +20,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# --- (The rest of your code remains exactly the same) ---
 # --- Enums for Expense Model ---
 class ExpenseCategory(PyEnum):
     FOOD = "Food"
@@ -46,15 +42,15 @@ class User(UserMixin, db.Model):
 
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(200), nullable=False) # Text field
-    category = db.Column(db.Enum(ExpenseCategory), nullable=False) # Enum field
-    is_recurring = db.Column(db.Boolean, default=False, nullable=False) # Boolean field
+    description = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.Enum(ExpenseCategory), nullable=False)
+    is_recurring = db.Column(db.Boolean, default=False, nullable=False)
     base_amount = db.Column(db.Float, nullable=False)
-    tax_rate = db.Column(db.Float, nullable=False) # e.g., 0.05 for 5%
+    tax_rate = db.Column(db.Float, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     @property
-    def amount_with_tax(self): # Calculated field
+    def amount_with_tax(self):
         return self.base_amount * (1 + self.tax_rate)
 
     def to_dict(self):
@@ -79,8 +75,53 @@ def init_db_command():
     db.create_all()
     print("Initialized the database.")
 
-# --- Routes will be added below ---
+# --- Authentication Routes ---
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': 'Missing username or password'}), 400
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 409
+
+    new_user = User(username=username)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': f'User {username} created successfully'}), 201
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        data = request.get_json()
+        user = User.query.filter_by(username=data['username']).first()
+        if user and user.check_password(data['password']):
+            login_user(user)
+            return jsonify({'message': 'Login successful'}), 200
+        return jsonify({'error': 'Invalid credentials'}), 401
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/api/auth/status')
+def auth_status():
+    if current_user.is_authenticated:
+        return jsonify({'is_logged_in': True, 'username': current_user.username})
+    return jsonify({'is_logged_in': False})
+
+# --- Main Application and API Routes ---
+# (Remember to add your main '/' route and your CRUD API routes for expenses here)
 # ...
 
+# This block should always be at the very end of the file
 if __name__ == '__main__':
     app.run(debug=True)
+

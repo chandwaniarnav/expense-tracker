@@ -72,6 +72,12 @@ def load_user(user_id):
 @app.cli.command("init-db")
 def init_db_command():
     """Creates the database tables."""
+    # Create the 'instance' folder if it doesn't exist
+    instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
+    if not os.path.exists(instance_path):
+        os.makedirs(instance_path)
+        print("Created instance folder.")
+    
     db.create_all()
     print("Initialized the database.")
 
